@@ -16,8 +16,6 @@ typedef struct Vector {
 } Vector;
 
 Vector *new_vec();
-void append(Vector *v, int elem);
-uint count(Vector *right, int elem);
 
 int lessThan(int a, int b);
 int greaterThan(int a, int b);
