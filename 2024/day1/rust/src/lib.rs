@@ -10,7 +10,7 @@ pub fn part1(left: &mut Vec<i32>, right: &mut Vec<i32>) -> i32 {
         .sum()
 }
 
-pub fn part2(left: Vec<i32>, right: Vec<i32>) -> i32 {
+pub fn part2(left: &Vec<i32>, right: &Vec<i32>) -> i32 {
     let right = right.iter().fold(HashMap::new(), |mut counter, elem| {
         *counter.entry(elem).or_insert(0) += 1;
         return counter;
