@@ -1,3 +1,5 @@
+#!/usr/bin/env lua
+
 local lib = require("lib")
 
 local filename = arg[1] or "../test.txt"
