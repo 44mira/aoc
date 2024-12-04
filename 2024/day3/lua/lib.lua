@@ -1,4 +1,4 @@
-M = {}
+local M = {}
 
 ---@param line string
 ---@return integer

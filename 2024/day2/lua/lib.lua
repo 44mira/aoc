@@ -1,6 +1,6 @@
 local h = require("helper")
 
-M = {}
+local M = {}
 
 --- parse the input lines into integer[][]
 ---@param lines string[]

@@ -1,4 +1,4 @@
-M = {}
+local M = {}
 
 ---@param left integer[]
 ---@param right integer[]
