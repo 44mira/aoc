@@ -2,18 +2,22 @@
 
 local row = require("row")
 
----@class Matrix
----@field rows Row[]
+---@overload fun(tbl: table): Matrix
+local Matrix = {}
 
-Matrix = {}
-Matrix.mt = {}
-
----@overload fun(tbl : table): Matrix
-Matrix = setmetatable(Matrix, {
+setmetatable(Matrix --[[@as table]], {
 	__call = function(_, tbl)
 		return Matrix.new(tbl)
 	end,
 })
+
+Matrix.mt = {}
+
+---@class Matrix
+---@field rows Row[]
+---@field transpose? fun(self: Matrix): Matrix
+Matrix.prototype = {}
+Matrix.mt.__index = Matrix.prototype
 
 ---@param self Matrix
 ---@return string
@@ -42,6 +46,28 @@ function Matrix.new(matrix)
 	setmetatable(ret, Matrix.mt)
 
 	return ret
+end
+
+---@param self Matrix
+---@return Matrix
+function Matrix.prototype.transpose(self)
+	local ret = {}
+	for _, v in ipairs(self.rows) do
+		local row_data = {}
+		for _, _ in ipairs(v) do
+			table.insert(row_data, "")
+		end
+		table.insert(ret, row_data)
+	end
+
+	for i = 1, #ret do
+		for j = 1, #ret[i] do
+			ret[i][j] = self.rows[j][i]
+			ret[j][i] = self.rows[i][j]
+		end
+	end
+
+	return Matrix(ret)
 end
 
 return Matrix

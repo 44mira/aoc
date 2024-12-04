@@ -1,12 +1,10 @@
----@meta
-
 ---@class Row
 
+---@overload fun(tbl : table): Row
 Row = {}
 Row.mt = {}
 
----@overload fun(tbl : table): Row
-Row = setmetatable(Row, {
+setmetatable(Row --[[@as table]], {
 	__call = function(_, tbl)
 		return Row.new(tbl)
 	end,
