@@ -1,4 +1,4 @@
-local P = require("point")
+local p = require("point")
 
 ---@class Grid
 ---@field guard_index fun(self: Grid): Point
@@ -53,12 +53,12 @@ function Grid:guard_index()
 	for y, row in ipairs(self) do
 		for x, c in ipairs(row) do
 			if c:find("[>^v<]") then
-				return P(x, y)
+				return p(x, y)
 			end
 		end
 	end
 
-	return P(-1, -1)
+	return p(-1, -1)
 end
 
 ---@param self Grid
