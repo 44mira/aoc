@@ -34,7 +34,11 @@ function Grid.new(grid)
 
 	if grid then
 		for _, v in ipairs(grid) do
-			table.insert(ret, v)
+			local row = {}
+			for _, e in ipairs(v) do
+				table.insert(row, e)
+			end
+			table.insert(ret, row)
 		end
 	end
 
