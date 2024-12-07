@@ -77,10 +77,6 @@ def part1(lines):
     return pos
 
 
-def part2():
-    paths: set[list[Point]] = set()
-
-
 def main():
     filename = "../test.txt"
 
