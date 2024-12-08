@@ -1,4 +1,3 @@
-from os import DirEntry
 from sys import argv
 from constants import *
 
@@ -33,12 +32,13 @@ def check_loop(guard: G, obstacles: set[P]) -> bool:
     guard_path: set[tuple[D, P]] = set()
 
     while in_board(guard.coordinates):
-        # check if guard has been at the same place, same direction
-        if (guard.direction, guard.coordinates) in guard_path:
-            return True
-        guard_path.add((guard.direction, guard.coordinates))
-
         if check_front(guard, obstacles):
+            # check if guard has been at the same turn, same direction
+            # if yes, we found a loop
+            if (guard.direction, guard.coordinates) in guard_path:
+                return True
+            guard_path.add((guard.direction, guard.coordinates))
+
             guard.turn()
             continue
 
@@ -49,8 +49,11 @@ def check_loop(guard: G, obstacles: set[P]) -> bool:
 
 def part2(guard: G, obstacles: set[P], guard_path: set[P]):
     loop_count = 0
+
+    # consider the path traced by part 1 as candidates for new obstacles
     new_obstacles = guard_path - {guard.coordinates}
 
+    # check if a loop occurs on adding a candidate to the set of obstacles
     for obstacle in new_obstacles:
         loop_count += check_loop(guard.clone(), obstacles | {obstacle})
 
@@ -90,5 +93,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 # }}}
