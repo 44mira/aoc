@@ -1,94 +1,94 @@
-import sys
-from collections import namedtuple
-
-Point = namedtuple("Point", ["x", "y"])
-
-
-def turn(state):
-    next_state = {">": "v", "v": "<", "<": "^", "^": ">"}
-
-    return next_state[state]
+from os import DirEntry
+from sys import argv
+from constants import *
 
 
-def find_guard(lines: list[list[str]]) -> Point:
-    for idx, line in enumerate(lines):
-        for state in "^>v<":
-            if state in line:
-                return Point(line.index(state), idx)
-    return Point(-1, -1)
+def in_board(point: P) -> bool:
+    return (
+        point.x >= 0 and point.x < X_MAX and point.y >= 0 and point.y < Y_MAX
+    )
 
 
-def scan_around(guard: Point, lines: list[list[str]]) -> Point | None:
-    for dir, face in zip((1, -1), "v^"):
-        if guard.y + dir >= len(lines) or guard.y + dir < 0:
+def check_front(guard: G, obstacles: set[P]) -> bool:
+    return (guard.coordinates + guard.direction) in obstacles
+
+
+def part1(guard: G, obstacles: set[P]) -> set[P]:
+    unique_points: set[P] = set()
+
+    while in_board(guard.coordinates):
+        unique_points.add(guard.coordinates)
+
+        if check_front(guard, obstacles):
+            guard.turn()
             continue
 
-        if (
-            lines[guard.y + dir][guard.x] == "#"
-            and lines[guard.y][guard.x] == face
-        ):
-            return Point(guard.x, guard.y + dir)
+        guard.move()
 
-    for dir, face in zip((1, -1), "><"):
-        if guard.x + dir >= len(lines[0]) or guard.x + dir < 0:
-            continue
-        if (
-            lines[guard.y][guard.x + dir] == "#"
-            and lines[guard.y][guard.x] == face
-        ):
-            return Point(guard.x + dir, guard.y)
+    return unique_points
 
 
-def move(guard: Point, lines: list[list[str]]) -> Point | None:
-    directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+def check_loop(guard: G, obstacles: set[P]) -> bool:
+    # we use tuples to lower overhead
+    guard_path: set[tuple[D, P]] = set()
 
-    for (x, y), state in zip(directions, "^>v<"):
-        if lines[guard.y][guard.x] != state:
+    while in_board(guard.coordinates):
+        # check if guard has been at the same place, same direction
+        if (guard.direction, guard.coordinates) in guard_path:
+            return True
+        guard_path.add((guard.direction, guard.coordinates))
+
+        if check_front(guard, obstacles):
+            guard.turn()
             continue
 
-        lines[guard.y][guard.x] = "."
+        guard.move()
 
-        invalid_y = guard.y + y < 0 or guard.y + y >= len(lines)
-        invalid_x = guard.x + x < 0 or guard.x + x >= len(lines[0])
-        if invalid_x or invalid_y:
-            return None
-
-        lines[guard.y + y][guard.x + x] = state
-        return Point(guard.x + x, guard.y + y)
+    return False
 
 
-def part1(lines):
-    unique_pos = set()
-    pos = 0
-    guard = find_guard(lines)
-    while True:
-        if scan_around(guard, lines):
-            lines[guard.y][guard.x] = turn(lines[guard.y][guard.x])
-            continue
+def part2(guard: G, obstacles: set[P], guard_path: set[P]):
+    loop_count = 0
+    new_obstacles = guard_path - {guard.coordinates}
 
-        guard = move(guard, lines)
-        if guard is None:
-            break
+    for obstacle in new_obstacles:
+        loop_count += check_loop(guard.clone(), obstacles | {obstacle})
 
-        if guard not in unique_pos:
-            unique_pos.add(guard)
-            pos += 1
+    return loop_count
 
-    return pos
+
+# [[ MAIN ]] {{{
 
 
 def main():
+    global X_MAX, Y_MAX
+
     filename = "../test.txt"
+    if len(argv) > 1:
+        filename = argv[1]
 
-    if len(sys.argv) > 1:
-        filename = sys.argv[1]
-
+    obstacles: set[P] = set()
+    guard: G = G(D(-1, -1), P(-1, -1))
     with open(filename, "r") as f:
-        lines = [list(line.strip()) for line in f.readlines()]
+        dimensions = [line.strip() for line in f.readlines()]
+        Y_MAX = len(dimensions)
+        X_MAX = len(dimensions[0])
 
-    print(part1(lines))
-    # print(part2(lines))
+        for y, line in enumerate(dimensions):
+            for x, c in enumerate(line):
+                if c == "#":
+                    obstacles.add(P(x, y))
+                elif c == "^":
+                    guard = G(D(0, -1), P(x, y))
+
+    part1_ans = part1(guard.clone(), obstacles)  # guard path
+    print(len(part1_ans))
+
+    part2_ans = part2(guard.clone(), obstacles, part1_ans)
+    print(part2_ans)
 
 
 if __name__ == "__main__":
     main()
+
+# }}}
