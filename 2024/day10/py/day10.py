@@ -3,7 +3,36 @@ from itertools import product
 import numpy as np
 
 
-def floodfill(grid, scores, current_idx, current_val=0):
+def floodfill1(grid, current_idx, current_val=0):
+    y_bounds, x_bounds = np.shape(grid)
+
+    def out_of_bounds(x, y):
+        return (
+            y + ydr >= y_bounds
+            or y + ydr < 0
+            or x + xdr >= x_bounds
+            or x + xdr < 0
+        )
+
+    if current_val == 9:
+        return {current_idx}
+
+    y, x = current_idx
+
+    nines = set()
+    for xdr, ydr in product([-1, 0, 1], repeat=2):
+        if abs(xdr) == abs(ydr):  # skip diagonals and 0, 0
+            continue
+
+        if out_of_bounds(x, y) or grid[y + ydr, x + xdr] != current_val + 1:
+            continue
+
+        nines |= floodfill1(grid, (y + ydr, x + xdr), current_val + 1)
+
+    return nines
+
+
+def floodfill2(grid, scores, current_idx, current_val=0):
     y_bounds, x_bounds = np.shape(grid)
 
     def out_of_bounds(x, y):
@@ -31,7 +60,7 @@ def floodfill(grid, scores, current_idx, current_val=0):
             score += scores[y + ydr, x + xdr]
             continue
 
-        score += floodfill(grid, scores, (y + ydr, x + xdr), current_val + 1)
+        score += floodfill2(grid, scores, (y + ydr, x + xdr), current_val + 1)
 
     scores[y, x] = score
 
@@ -40,11 +69,22 @@ def floodfill(grid, scores, current_idx, current_val=0):
 
 def part1(grid):
     zeroes = zip(*np.where(grid == 0))
+
+    score = 0
+    for zero in zeroes:
+        nines = floodfill1(grid, zero)
+        score += len(nines)
+
+    return score
+
+
+def part2(grid):
+    zeroes = zip(*np.where(grid == 0))
     scores = np.zeros(np.shape(grid), dtype=np.int64) - 1
 
     score = 0
     for zero in zeroes:
-        score += floodfill(grid, scores, zero)
+        score += floodfill2(grid, scores, zero)
 
     return score
 
@@ -64,6 +104,7 @@ def main():
     parsed_grid = np.array(grid)
 
     print(part1(parsed_grid))
+    print(part2(parsed_grid))
 
 
 if __name__ == "__main__":
